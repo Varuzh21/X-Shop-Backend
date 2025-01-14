@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 const categories = [
+    { name: "All" },
     { name: "Men’s Clothing" },
     { name: "Women’s Clothing" },
     { name: "T-Shirts" },

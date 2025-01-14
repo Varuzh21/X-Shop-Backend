@@ -7,11 +7,11 @@ export const AuthService = {
         return prisma.user.findUnique({ where: { email } });
     },
 
-    async createUser(name, email, password) {
+    async createUser(fullName, email, password) {
         const hashedPassword = await bcrypt.hash(password, 10);
         return prisma.user.create({
             data: {
-                name,
+                fullName,
                 email,
                 password: hashedPassword,
             },

@@ -14,14 +14,16 @@ class CategoryController {
         try {
             const { id } = req.params;
             const categoryId = +id;
+            
             const category = await CategoryService.getCategoryById(categoryId);
-            if (category) {
-                res.status(200).json(category);
-            } else {
-                res.status(404).json({ message: 'Category not found' });
+
+            if (!category) {
+                return res.status(404).json({ message: "Category not found" });
             }
+
+            return res.status(200).json(category);
         } catch (error) {
-            next(error);
+            return next(error);
         }
     }
 

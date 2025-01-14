@@ -23,10 +23,74 @@ class ProductsController {
         }
     }
 
+    static async getProductByCategoryId(req, res, next) {
+        try {
+            const categoryId = parseInt(req.params.categoryId, 10);
+
+            if (isNaN(categoryId)) {
+                return res.status(400).json({ message: "Invalid category ID" });
+            }
+
+            const page = parseInt(req.query.page, 10) || 1;
+            const limit = parseInt(req.query.limit, 10) || 10;
+            const skip = (page - 1) * limit;
+    
+            const [total, products] = await prisma.$transaction([
+                prisma.product.count({
+                    where: { categoryId },
+                }),
+                prisma.product.findMany({
+                    where: { categoryId },
+                    skip,
+                    take: limit,
+                }),
+            ]);
+            const totalPages = Math.ceil(total / limit);
+    
+            if (products.length === 0) {
+                return res.status(404).json({ message: "No products found for this category" });
+            }
+    
+            return res.status(200).json({
+                data: products,
+                pagination: {
+                    totalItems: total,
+                    currentPage: page,
+                    totalPages,
+                    limitPerPage: limit,
+                },
+            });
+        } catch (error) {
+            console.error("Error retrieving products by category ID:", error);
+            next(new Error("Failed to retrieve products by category ID"));
+        }
+    }
+
     static async getAllProducts(req, res, next) {
         try {
-            const products = await prisma.product.findMany();
-            return res.status(200).json({ products });
+            const page = parseInt(req.query.page, 10) || 1;
+            const limit = parseInt(req.query.limit, 10) || 10;
+            const skip = (page - 1) * limit;
+
+            const [total, products] = await prisma.$transaction([
+                prisma.product.count(),
+                prisma.product.findMany({
+                    skip,
+                    take: limit, 
+                }),
+            ]);
+
+            const totalPages = Math.ceil(total / limit);
+
+            return res.status(200).json({
+                data: products,
+                pagination: {
+                    totalItems: total,
+                    currentPage: page,
+                    totalPages,
+                    limitPerPage: limit,
+                },
+            });
         } catch (error) {
             console.error("Error retrieving products:", error);
             next(new Error("Failed to retrieve products"));

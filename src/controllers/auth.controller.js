@@ -4,27 +4,51 @@ import nodemailer from 'nodemailer';
 class AuthController {
     static async createUser(req, res, next) {
         try {
-            const { name, email, password } = req.body;
+            const { email, fullName, password } = req.body;
 
-            const existingUser = await AuthService.findUserByEmail(email);
-
-            if (existingUser) {
-                return res.status(400).json({ message: 'User already exists' });
+            if (!fullName || !email || !password) {
+                return res.status(400).json({
+                    message: 'Full name, email, and password are required.'
+                });
             }
 
-            const newUser = await AuthService.createUser(name, email, password);
+            if (typeof fullName !== 'string' || fullName.trim().length < 3) {
+                return res.status(400).json({
+                    message: 'Full name must be at least 3 characters long.',
+                });
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return res.status(400).json({
+                    message: 'Please provide a valid email address.',
+                });
+            }
+
+            if (password.length < 6) {
+                return res.status(400).json({
+                    message: 'Password must be at least 6 characters long.',
+                });
+            }
+
+            const existingUser = await AuthService.findUserByEmail(email);
+            if (existingUser) {
+                return res.status(409).json({
+                    message: 'User already exists.',
+                });
+            }
+
+            await AuthService.createUser(fullName, email, password);
 
             return res.status(201).json({
-                message: 'User created successfully',
-                user: {
-                    id: newUser.id,
-                    username: newUser.name,
-                    email: newUser.email,
+                data: {
+                    status: 201,
+                    message: 'User created successfully.',
                 },
             });
         } catch (error) {
             console.error(error);
-            next(new Error('Failed to create user'));
+            return next.status(500).json({ message: 'An error occurred while creating the user.' });
         }
     }
 
@@ -44,16 +68,10 @@ class AuthController {
                 return res.status(401).json({ message: 'Invalid password' });
             }
 
-            const token = AuthService.generateToken({ userId: user.id, email: user.email });
+            const accessToken = AuthService.generateToken({ userId: user.id, email: user.email });
 
             return res.status(200).json({
-                message: 'Login successful',
-                user: {
-                    id: user.id,
-                    name: user.name,
-                    email: user.email,
-                    token,
-                },
+                accessToken,
             });
         } catch (error) {
             console.error(error);
@@ -81,7 +99,7 @@ class AuthController {
                 service: 'gmail',
                 auth: {
                     user: 'varujan.grigoryan.2017@gmail.com',
-                    pass: 'Varuzhan_2002',
+                    // pass: 'Varuzhan_2002',
                 },
             });
 
