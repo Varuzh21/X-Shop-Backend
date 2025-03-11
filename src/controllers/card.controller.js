@@ -49,65 +49,65 @@ class CardController {
                 }
             })
 
-        res.status(201).json(newCard);
-    } catch(error) {
-        console.error('Error creating card:', error);
-        next({ message: 'An error occurred while creating the card' });
+            res.status(201).json(newCard);
+        } catch (error) {
+            console.error('Error creating card:', error);
+            next({ message: 'An error occurred while creating the card' });
+        }
     }
-}
 
     static async getUserCards(req, res, next) {
-    try {
-        const { userId } = req.params;
+        try {
+            const { userId } = req.params;
 
-        const userCards = await prisma.card.findMany({
-            where: { userId: parseInt(userId) },
-            select: {
-                id: true,
-                expiryMonth: true,
-                expiryYear: true,
-                cardNumber: true,
-                billingAddress: true,
-            },
-        });
+            const userCards = await prisma.card.findMany({
+                where: { userId: parseInt(userId) },
+                select: {
+                    id: true,
+                    expiryMonth: true,
+                    expiryYear: true,
+                    cardNumber: true,
+                    billingAddress: true,
+                },
+            });
 
-        res.status(200).json(userCards);
-    } catch (error) {
-        console.error('Error fetching user cards:', error);
-        next({ message: 'An error occurred while fetching the cards' });
+            res.status(200).json(userCards);
+        } catch (error) {
+            console.error('Error fetching user cards:', error);
+            next({ message: 'An error occurred while fetching the cards' });
+        }
     }
-}
 
     static async deleteCard(req, res, next) {
-    try {
-        const { id } = req.params;
+        try {
+            const { id } = req.params;
 
-        const card = await prisma.card.findUnique({
-            where: { id: parseInt(id) },
-        });
+            const card = await prisma.card.findUnique({
+                where: { id: parseInt(id) },
+            });
 
-        if (!card) {
-            return res.status(404).json({ message: 'Card not found' });
+            if (!card) {
+                return res.status(404).json({ message: 'Card not found' });
+            }
+
+            const user = await prisma.user.findUnique({
+                where: { id: card.userId },
+            });
+
+            if (user && user.stripeCustomerId) {
+                await stripe.customers.deleteSource(user.stripeCustomerId, card.cardStripeId);
+            }
+
+            await prisma.card.delete({
+                where: { id: parseInt(id) },
+            });
+
+            res.status(204).send();
+        } catch (error) {
+            console.error('Error deleting card:', error);
+            next({ message: 'An error occurred while deleting the card' });
         }
-
-        const user = await prisma.user.findUnique({
-            where: { id: card.userId },
-        });
-
-        if (user && user.stripeCustomerId) {
-            await stripe.customers.deleteSource(user.stripeCustomerId, card.cardStripeId);
-        }
-
-        await prisma.card.delete({
-            where: { id: parseInt(id) },
-        });
-
-        res.status(204).send();
-    } catch (error) {
-        console.error('Error deleting card:', error);
-        next({ message: 'An error occurred while deleting the card' });
     }
-}
 }
 
 export default CardController;

@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '../src/prisma.js';
 
 const categories = [
     { name: "All" },
@@ -15,15 +13,14 @@ const categories = [
     { name: "Hoodies & Sweatshirts" },
     { name: "Suits & Blazers" },
     { name: "Ethnic Wear" },
-    { name: "Activewear" },
-    { name: "Innerwear & Sleepwear" },
+    { name: "Interwar & Sleepwear" },
     { name: "Swimwear" },
     { name: 'Party Wear' },
     { name: 'Wedding Wear' },
     { name: 'Festival Wear' },
     { name: 'Office/Formal Wear' },
     { name: 'Casual Wear' },
-    { name: 'Loungewear' },
+    { name: 'Lounger' },
     { name: 'Occasion Wear' },
     { name: 'Sweaters & Cardigans' },
     { name: 'Thermals' },
@@ -69,6 +66,7 @@ async function main() {
                 price: parseFloat((Math.random() * 100).toFixed(2)),
                 stock: Math.floor(Math.random() * 50) + 1,
                 categoryId: category.id,
+                like: false,
                 thumbnail: `https://via.placeholder.com/150?text=Product+${i}`,
             },
         });

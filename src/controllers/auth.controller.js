@@ -72,6 +72,7 @@ class AuthController {
 
             return res.status(200).json({
                 accessToken,
+                userId: user.id
             });
         } catch (error) {
             console.error(error);
