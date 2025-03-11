@@ -1,4 +1,4 @@
-import prisma from '../prisma.js';
+import prisma from '../utils/prisma.js';
 import Stripe from 'stripe';
 
 const stripe = new Stripe("sk_test_51QeFlsDGRxLHfL2YHERA8oK8jihUxHOlQOzt4KCU27lUp3o84VCjPlwNdWRRP6Wj2wiW76t02F9jW3aIptzD1rQQ00EziCnWhj");
